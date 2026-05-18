@@ -23,10 +23,35 @@ const TYPES = [
 
 export default function PokemonTypeBoard() {
   const [eliminated, setEliminated] = useState({})
+  const [usernames, setUsernames] = useState({})
 
   const eliminatedCount = Object.values(eliminated).filter(Boolean).length
+  const assignedCount = Object.values(usernames).filter(Boolean).length
 
-  const toggleType = (typeName) => {
+  const editUsername = (typeName) => {
+    const currentName = usernames[typeName] || ''
+
+    const newName = window.prompt(
+      `Assign username to ${typeName}:`,
+      currentName
+    )
+
+    if (newName === null) return
+
+    setUsernames((prev) => ({
+      ...prev,
+      [typeName]: newName.trim(),
+    }))
+  }
+
+  const handleCardClick = (typeName) => {
+    const username = usernames[typeName]
+
+    if (!username) {
+      editUsername(typeName)
+      return
+    }
+
     setEliminated((prev) => ({
       ...prev,
       [typeName]: !prev[typeName],
@@ -35,6 +60,7 @@ export default function PokemonTypeBoard() {
 
   const resetBoard = () => {
     setEliminated({})
+    setUsernames({})
   }
 
   return (
@@ -45,17 +71,32 @@ export default function PokemonTypeBoard() {
             <p className="mb-2 text-sm font-bold uppercase tracking-[0.35em] text-yellow-300">
               Pokémon Type Board
             </p>
+
             <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
-              Type Elimination Dashboard
+              Type Assignment Dashboard
             </h1>
+
             <p className="mt-3 max-w-2xl text-zinc-400">
-              Click a type card to mark it with a readable X.
+              First click assigns a username. After assigned, clicking toggles the X.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="rounded-2xl bg-black/30 px-5 py-3 text-center ring-1 ring-white/10">
-              <div className="text-2xl font-black">{eliminatedCount}/18</div>
+              <div className="text-2xl font-black">
+                {assignedCount}/18
+              </div>
+
+              <div className="text-xs uppercase tracking-widest text-zinc-400">
+                Assigned
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-black/30 px-5 py-3 text-center ring-1 ring-white/10">
+              <div className="text-2xl font-black">
+                {eliminatedCount}/18
+              </div>
+
               <div className="text-xs uppercase tracking-widest text-zinc-400">
                 Eliminated
               </div>
@@ -73,36 +114,67 @@ export default function PokemonTypeBoard() {
         <main className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {TYPES.map((type) => {
             const isEliminated = Boolean(eliminated[type.name])
+            const username = usernames[type.name]
 
             return (
               <button
                 key={type.name}
-                onClick={() => toggleType(type.name)}
-                className="group relative min-h-40 overflow-hidden rounded-3xl border border-white/10 p-5 text-left shadow-xl transition duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                onClick={() => handleCardClick(type.name)}
+                className="group relative min-h-52 overflow-hidden rounded-3xl border border-white/10 p-5 text-left shadow-xl transition duration-200 hover:-translate-y-1 hover:shadow-2xl"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${type.colors}`} />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${type.colors}`}
+                />
+
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.42),transparent_35%)]" />
 
                 <div
-                  className={`relative z-10 flex h-full flex-col justify-between transition duration-300 ${
-                    isEliminated ? 'scale-95 opacity-45' : 'scale-100 opacity-100'
+                  className={`relative z-10 flex h-full flex-col items-center justify-center transition duration-300 ${
+                    isEliminated
+                      ? 'scale-95 opacity-45'
+                      : 'scale-100 opacity-100'
                   } ${type.text}`}
                 >
-                  <div className="text-5xl drop-shadow-sm">{type.icon}</div>
-
-                  <div>
-                    <h2 className="text-2xl font-black tracking-tight">
-                      {type.name}
-                    </h2>
-                    <p className="mt-1 text-sm font-semibold opacity-80">
-                      Pokémon Type
-                    </p>
+                  <div className="text-7xl drop-shadow-xl">
+                    {type.icon}
                   </div>
+
+                  <h2 className="mt-4 text-2xl font-black tracking-tight">
+                    {type.name}
+                  </h2>
+
+                  <p className="mt-2 text-sm font-semibold opacity-80">
+                    {username
+                      ? 'Click to toggle X'
+                      : 'Click to assign'}
+                  </p>
                 </div>
+
+                {username && (
+                  <>
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        editUsername(type.name)
+                      }}
+                      className="absolute right-3 top-3 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-sm font-black text-white ring-1 ring-white/20 transition hover:scale-110 hover:bg-black"
+                      title="Edit username"
+                    >
+                      ✏️
+                    </button>
+
+                    <div className="absolute bottom-3 left-3 right-3 z-50 rounded-xl bg-black/90 px-3 py-2 text-center text-sm font-black text-white shadow-2xl ring-1 ring-white/30 backdrop-blur">
+                      <span className="block truncate">
+                        {username}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {isEliminated && (
                   <>
                     <div className="absolute inset-0 z-20 bg-black/35" />
+
                     <svg
                       className="pointer-events-none absolute inset-0 z-30 h-full w-full"
                       viewBox="0 0 100 100"
@@ -117,6 +189,7 @@ export default function PokemonTypeBoard() {
                         strokeWidth="8"
                         strokeLinecap="round"
                       />
+
                       <line
                         x1="88"
                         y1="12"
