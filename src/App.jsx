@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import NBAEliminationBoard from './components/NBAEliminationBoard'
 import PokemonTypeBoard from './components/PokemonTypeBoard'
+import NFLEliminationBoard from './components/NFLEliminationBoard'
 
 export default function App() {
   const [board, setBoard] = useState('nba')
 
   return (
     <div>
-      <nav className="flex gap-3 bg-black p-4">
+      <nav className="flex flex-wrap gap-3 bg-black p-4">
         <button
           onClick={() => setBoard('nba')}
           className="rounded-xl bg-white px-4 py-2 font-bold text-black"
@@ -21,10 +22,18 @@ export default function App() {
         >
           Pokémon Type Board
         </button>
+
+        <button
+          onClick={() => setBoard('nfl')}
+          className="rounded-xl bg-white px-4 py-2 font-bold text-black"
+        >
+          NFL Board
+        </button>
       </nav>
 
       {board === 'nba' && <NBAEliminationBoard />}
       {board === 'pokemon' && <PokemonTypeBoard />}
+      {board === 'nfl' && <NFLEliminationBoard />}
     </div>
   )
 }
