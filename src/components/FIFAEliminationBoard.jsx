@@ -2,53 +2,24 @@ import { useState } from 'react'
 
 const teams = [
   { name: 'Argentina', abbr: 'ARG', logo: 'https://flagcdn.com/w160/ar.png' },
-  { name: 'Algeria', abbr: 'ALG', logo: 'https://flagcdn.com/w160/dz.png' },
-  { name: 'Australia', abbr: 'AUS', logo: 'https://flagcdn.com/w160/au.png' },
-  { name: 'Austria', abbr: 'AUT', logo: 'https://flagcdn.com/w160/at.png' },
   { name: 'Belgium', abbr: 'BEL', logo: 'https://flagcdn.com/w160/be.png' },
-  { name: 'Bosnia & Herzegovina', abbr: 'BIH', logo: 'https://flagcdn.com/w160/ba.png' },
   { name: 'Brazil', abbr: 'BRA', logo: 'https://flagcdn.com/w160/br.png' },
   { name: 'Canada', abbr: 'CAN', logo: 'https://flagcdn.com/w160/ca.png' },
-  { name: 'Cape Verde', abbr: 'CPV', logo: 'https://flagcdn.com/w160/cv.png' },
-  { name: 'Colombia', abbr: 'COL', logo: 'https://flagcdn.com/w160/co.png' },
-  { name: 'Croatia', abbr: 'CRO', logo: 'https://flagcdn.com/w160/hr.png' },
-  { name: 'Curaçao', abbr: 'CUW', logo: 'https://flagcdn.com/w160/cw.png' },
-  { name: 'Czechia', abbr: 'CZE', logo: 'https://flagcdn.com/w160/cz.png' },
-  { name: 'DR Congo', abbr: 'DRC', logo: 'https://flagcdn.com/w160/cd.png' },
-  { name: 'Ecuador', abbr: 'ECU', logo: 'https://flagcdn.com/w160/ec.png' },
-  { name: 'Egypt', abbr: 'EGY', logo: 'https://flagcdn.com/w160/eg.png' },
+  { name: 'Chile', abbr: 'CHI', logo: 'https://flagcdn.com/w160/cl.png' },
   { name: 'England', abbr: 'ENG', logo: 'https://flagcdn.com/w160/gb-eng.png' },
-  { name: 'Spain', abbr: 'ESP', logo: 'https://flagcdn.com/w160/es.png' },
   { name: 'France', abbr: 'FRA', logo: 'https://flagcdn.com/w160/fr.png' },
   { name: 'Germany', abbr: 'GER', logo: 'https://flagcdn.com/w160/de.png' },
-  { name: 'Ghana', abbr: 'GHA', logo: 'https://flagcdn.com/w160/gh.png' },
-  { name: 'Haiti', abbr: 'HAI', logo: 'https://flagcdn.com/w160/ht.png' },
-  { name: 'Iran', abbr: 'IRN', logo: 'https://flagcdn.com/w160/ir.png' },
-  { name: 'Iraq', abbr: 'IRQ', logo: 'https://flagcdn.com/w160/iq.png' },
-  { name: 'Ivory Coast', abbr: 'IVC', logo: 'https://flagcdn.com/w160/ci.png' },
-  { name: 'Japan', abbr: 'JPN', logo: 'https://flagcdn.com/w160/jp.png' },
-  { name: 'Jordan', abbr: 'JOR', logo: 'https://flagcdn.com/w160/jo.png' },
-  { name: 'South Korea', abbr: 'KOR', logo: 'https://flagcdn.com/w160/kr.png' },
-  { name: 'Morocco', abbr: 'MAR', logo: 'https://flagcdn.com/w160/ma.png' },
+  { name: 'Italy', abbr: 'ITA', logo: 'https://flagcdn.com/w160/it.png' },
   { name: 'Mexico', abbr: 'MEX', logo: 'https://flagcdn.com/w160/mx.png' },
   { name: 'Netherlands', abbr: 'NED', logo: 'https://flagcdn.com/w160/nl.png' },
-  { name: 'New Zealand', abbr: 'NZL', logo: 'https://flagcdn.com/w160/nz.png' },
-  { name: 'Norway', abbr: 'NOR', logo: 'https://flagcdn.com/w160/no.png' },
-  { name: 'Panama', abbr: 'PAN', logo: 'https://flagcdn.com/w160/pa.png' },
-  { name: 'Paraguay', abbr: 'PAR', logo: 'https://flagcdn.com/w160/py.png' },
+  { name: 'Nigeria', abbr: 'NGA', logo: 'https://flagcdn.com/w160/ng.png' },
+  { name: 'Poland', abbr: 'POL', logo: 'https://flagcdn.com/w160/pl.png' },
   { name: 'Portugal', abbr: 'POR', logo: 'https://flagcdn.com/w160/pt.png' },
-  { name: 'Qatar', abbr: 'QAT', logo: 'https://flagcdn.com/w160/qa.png' },
-  { name: 'Saudi Arabia', abbr: 'KSA', logo: 'https://flagcdn.com/w160/sa.png' },
-  { name: 'Senegal', abbr: 'SEN', logo: 'https://flagcdn.com/w160/sn.png' },
   { name: 'South Africa', abbr: 'RSA', logo: 'https://flagcdn.com/w160/za.png' },
-  { name: 'Scotland', abbr: 'SCO', logo: 'https://flagcdn.com/w160/gb-sct.png' },
-  { name: 'Switzerland', abbr: 'SUI', logo: 'https://flagcdn.com/w160/ch.png' },
-  { name: 'Sweden', abbr: 'SWE', logo: 'https://flagcdn.com/w160/se.png' },
-  { name: 'Tunisia', abbr: 'TUN', logo: 'https://flagcdn.com/w160/tn.png' },
-  { name: 'Türkiye', abbr: 'TUR', logo: 'https://flagcdn.com/w160/tr.png' },
+  { name: 'Spain', abbr: 'ESP', logo: 'https://flagcdn.com/w160/es.png' },
   { name: 'United States', abbr: 'USA', logo: 'https://flagcdn.com/w160/us.png' },
   { name: 'Uruguay', abbr: 'URU', logo: 'https://flagcdn.com/w160/uy.png' },
-  { name: 'Uzbekistan', abbr: 'UZB', logo: 'https://flagcdn.com/w160/uz.png' },
+  { name: 'South Korea', abbr: 'KOR', logo: 'https://flagcdn.com/w160/kr.png' },
 ]
 
 export default function FIFAEliminationBoard() {
@@ -58,19 +29,11 @@ export default function FIFAEliminationBoard() {
   const editUsername = (abbr) => {
     const currentName = usernames[abbr] || ''
     const newName = window.prompt(`Assign username to ${abbr}:`, currentName)
-
     if (newName === null) return
-
-    const cleanName = newName.trim()
 
     setUsernames((prev) => ({
       ...prev,
-      [abbr]: cleanName,
-    }))
-
-    setEliminated((prev) => ({
-      ...prev,
-      [abbr]: cleanName.length > 0,
+      [abbr]: newName.trim(),
     }))
   }
 
@@ -100,12 +63,11 @@ export default function FIFAEliminationBoard() {
               FIFA Elimination Board
             </h1>
             <p className="text-zinc-400 mt-2">
-              First click assigns a username and automatically marks the team. Click again to restore or eliminate.
+              First click assigns a username. After assigned, click the flag to eliminate or restore them.
             </p>
           </div>
 
           <button
-            type="button"
             onClick={resetBoard}
             className="px-5 py-3 rounded-2xl bg-white text-black font-semibold hover:scale-105 transition-transform"
           >
@@ -116,25 +78,17 @@ export default function FIFAEliminationBoard() {
         <div className="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 shadow-2xl">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
             {teams.map((team) => {
-              const username = usernames[team.abbr] || ''
               const isEliminated = Boolean(eliminated[team.abbr])
+              const username = usernames[team.abbr]
 
               return (
-                <div
+                <button
                   key={team.abbr}
-                  role="button"
-                  tabIndex={0}
                   onClick={() => handleTeamClick(team.abbr)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      handleTeamClick(team.abbr)
-                    }
-                  }}
-                  className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-36 cursor-pointer"
+                  className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-36"
                 >
                   {username && (
                     <button
-                      type="button"
                       onClick={(event) => {
                         event.stopPropagation()
                         editUsername(team.abbr)
@@ -159,7 +113,9 @@ export default function FIFAEliminationBoard() {
                   </div>
 
                   <div className="mt-3 text-center pb-7">
-                    <div className="font-bold text-sm">{team.abbr}</div>
+                    <div className="font-bold text-sm">
+                      {team.abbr}
+                    </div>
                     <div className="text-[11px] text-zinc-400 leading-tight mt-1">
                       {team.name}
                     </div>
@@ -174,34 +130,20 @@ export default function FIFAEliminationBoard() {
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
                       >
-                        <line
-                          x1="12"
-                          y1="12"
-                          x2="88"
-                          y2="88"
-                          stroke="#ef4444"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                        />
-                        <line
-                          x1="88"
-                          y1="12"
-                          x2="12"
-                          y2="88"
-                          stroke="#ef4444"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                        />
+                        <line x1="12" y1="12" x2="88" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
+                        <line x1="88" y1="12" x2="12" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
                       </svg>
                     </>
                   )}
 
                   {username && (
                     <div className="absolute bottom-2 left-2 right-2 z-50 rounded-xl bg-black/90 px-2 py-1.5 text-center text-xs font-black text-white shadow-2xl ring-1 ring-white/30 backdrop-blur">
-                      <span className="block truncate">{username}</span>
+                      <span className="block truncate">
+                        {username}
+                      </span>
                     </div>
                   )}
-                </div>
+                </button>
               )
             })}
           </div>
