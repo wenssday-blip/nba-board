@@ -57,16 +57,26 @@ export default function NFLEliminationBoard() {
   const editUsername = (abbr) => {
     const currentName = usernames[abbr] || ''
     const newName = window.prompt(`Assign username to ${abbr}:`, currentName)
+
     if (newName === null) return
+
+    const cleanName = newName.trim()
 
     setUsernames((prev) => ({
       ...prev,
-      [abbr]: newName.trim(),
+      [abbr]: cleanName,
+    }))
+
+    setEliminated((prev) => ({
+      ...prev,
+      [abbr]: cleanName.length > 0,
     }))
   }
 
   const handleTeamClick = (abbr) => {
-    if (!usernames[abbr]) {
+    const username = usernames[abbr]
+
+    if (!username) {
       editUsername(abbr)
       return
     }
@@ -93,11 +103,13 @@ export default function NFLEliminationBoard() {
               NFL Elimination Board
             </h1>
             <p className="text-zinc-400 mt-2">
-              First click assigns a username. After assigned, click the logo to eliminate or restore them.
+              First click assigns a username and automatically marks the team.
+              Click again to restore or eliminate.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={resetBoard}
             className="px-5 py-3 rounded-2xl bg-white text-black font-semibold hover:scale-105 transition-transform"
           >
@@ -107,7 +119,10 @@ export default function NFLEliminationBoard() {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
           {conferences.map((conference) => {
-            const conferenceTeams = teams.filter((team) => team.conference === conference)
+            const conferenceTeams = teams.filter(
+              (team) => team.conference === conference
+            )
+
             const divisions = [...new Set(conferenceTeams.map((t) => t.division))]
 
             return (
@@ -121,7 +136,9 @@ export default function NFLEliminationBoard() {
 
                 <div className="space-y-8">
                   {divisions.map((division) => {
-                    const divisionTeams = conferenceTeams.filter((team) => team.division === division)
+                    const divisionTeams = conferenceTeams.filter(
+                      (team) => team.division === division
+                    )
 
                     return (
                       <div key={division}>
@@ -131,17 +148,25 @@ export default function NFLEliminationBoard() {
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           {divisionTeams.map((team) => {
+                            const username = usernames[team.abbr] || ''
                             const isEliminated = Boolean(eliminated[team.abbr])
-                            const username = usernames[team.abbr]
 
                             return (
-                              <button
+                              <div
                                 key={team.abbr}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => handleTeamClick(team.abbr)}
-                                className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-44"
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    handleTeamClick(team.abbr)
+                                  }
+                                }}
+                                className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-44 cursor-pointer"
                               >
                                 {username && (
                                   <button
+                                    type="button"
                                     onClick={(event) => {
                                       event.stopPropagation()
                                       editUsername(team.abbr)
@@ -155,7 +180,9 @@ export default function NFLEliminationBoard() {
 
                                 <div
                                   className={`transition-all duration-300 ${
-                                    isEliminated ? 'opacity-40 scale-95' : 'opacity-100 scale-100'
+                                    isEliminated
+                                      ? 'opacity-40 scale-95'
+                                      : 'opacity-100 scale-100'
                                   }`}
                                 >
                                   <img
@@ -183,8 +210,24 @@ export default function NFLEliminationBoard() {
                                       viewBox="0 0 100 100"
                                       preserveAspectRatio="none"
                                     >
-                                      <line x1="12" y1="12" x2="88" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
-                                      <line x1="88" y1="12" x2="12" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
+                                      <line
+                                        x1="12"
+                                        y1="12"
+                                        x2="88"
+                                        y2="88"
+                                        stroke="#ef4444"
+                                        strokeWidth="8"
+                                        strokeLinecap="round"
+                                      />
+                                      <line
+                                        x1="88"
+                                        y1="12"
+                                        x2="12"
+                                        y2="88"
+                                        stroke="#ef4444"
+                                        strokeWidth="8"
+                                        strokeLinecap="round"
+                                      />
                                     </svg>
                                   </>
                                 )}
@@ -196,7 +239,7 @@ export default function NFLEliminationBoard() {
                                     </span>
                                   </div>
                                 )}
-                              </button>
+                              </div>
                             )
                           })}
                         </div>

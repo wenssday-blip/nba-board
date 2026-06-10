@@ -11,7 +11,6 @@ const teams = [
   { name: 'Canada', abbr: 'CAN', logo: 'https://flagcdn.com/w160/ca.png' },
   { name: 'Cape Verde', abbr: 'CPV', logo: 'https://flagcdn.com/w160/cv.png' },
   { name: 'Colombia', abbr: 'COL', logo: 'https://flagcdn.com/w160/co.png' },
-  { name: 'Costa Rica', abbr: 'CRC', logo: 'https://flagcdn.com/w160/cr.png' },
   { name: 'Croatia', abbr: 'CRO', logo: 'https://flagcdn.com/w160/hr.png' },
   { name: 'Curaçao', abbr: 'CUW', logo: 'https://flagcdn.com/w160/cw.png' },
   { name: 'Czechia', abbr: 'CZE', logo: 'https://flagcdn.com/w160/cz.png' },
@@ -22,6 +21,7 @@ const teams = [
   { name: 'Spain', abbr: 'ESP', logo: 'https://flagcdn.com/w160/es.png' },
   { name: 'France', abbr: 'FRA', logo: 'https://flagcdn.com/w160/fr.png' },
   { name: 'Germany', abbr: 'GER', logo: 'https://flagcdn.com/w160/de.png' },
+  { name: 'Ghana', abbr: 'GHA', logo: 'https://flagcdn.com/w160/gh.png' },
   { name: 'Haiti', abbr: 'HAI', logo: 'https://flagcdn.com/w160/ht.png' },
   { name: 'Iran', abbr: 'IRN', logo: 'https://flagcdn.com/w160/ir.png' },
   { name: 'Iraq', abbr: 'IRQ', logo: 'https://flagcdn.com/w160/iq.png' },
@@ -39,6 +39,7 @@ const teams = [
   { name: 'Portugal', abbr: 'POR', logo: 'https://flagcdn.com/w160/pt.png' },
   { name: 'Qatar', abbr: 'QAT', logo: 'https://flagcdn.com/w160/qa.png' },
   { name: 'Saudi Arabia', abbr: 'KSA', logo: 'https://flagcdn.com/w160/sa.png' },
+  { name: 'Senegal', abbr: 'SEN', logo: 'https://flagcdn.com/w160/sn.png' },
   { name: 'South Africa', abbr: 'RSA', logo: 'https://flagcdn.com/w160/za.png' },
   { name: 'Scotland', abbr: 'SCO', logo: 'https://flagcdn.com/w160/gb-sct.png' },
   { name: 'Switzerland', abbr: 'SUI', logo: 'https://flagcdn.com/w160/ch.png' },
@@ -48,7 +49,6 @@ const teams = [
   { name: 'United States', abbr: 'USA', logo: 'https://flagcdn.com/w160/us.png' },
   { name: 'Uruguay', abbr: 'URU', logo: 'https://flagcdn.com/w160/uy.png' },
   { name: 'Uzbekistan', abbr: 'UZB', logo: 'https://flagcdn.com/w160/uz.png' },
-  { name: 'Venezuela', abbr: 'VEN', logo: 'https://flagcdn.com/w160/ve.png' },
 ]
 
 export default function FIFAEliminationBoard() {
@@ -58,11 +58,19 @@ export default function FIFAEliminationBoard() {
   const editUsername = (abbr) => {
     const currentName = usernames[abbr] || ''
     const newName = window.prompt(`Assign username to ${abbr}:`, currentName)
+
     if (newName === null) return
+
+    const cleanName = newName.trim()
 
     setUsernames((prev) => ({
       ...prev,
-      [abbr]: newName.trim(),
+      [abbr]: cleanName,
+    }))
+
+    setEliminated((prev) => ({
+      ...prev,
+      [abbr]: cleanName.length > 0,
     }))
   }
 
@@ -92,11 +100,12 @@ export default function FIFAEliminationBoard() {
               FIFA Elimination Board
             </h1>
             <p className="text-zinc-400 mt-2">
-              First click assigns a username. After assigned, click the flag to eliminate or restore them.
+              First click assigns a username and automatically marks the team. Click again to restore or eliminate.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={resetBoard}
             className="px-5 py-3 rounded-2xl bg-white text-black font-semibold hover:scale-105 transition-transform"
           >
@@ -107,17 +116,25 @@ export default function FIFAEliminationBoard() {
         <div className="bg-zinc-900 rounded-3xl border border-zinc-800 p-6 shadow-2xl">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
             {teams.map((team) => {
+              const username = usernames[team.abbr] || ''
               const isEliminated = Boolean(eliminated[team.abbr])
-              const username = usernames[team.abbr]
 
               return (
-                <button
+                <div
                   key={team.abbr}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleTeamClick(team.abbr)}
-                  className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-36"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      handleTeamClick(team.abbr)
+                    }
+                  }}
+                  className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-3 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-36 cursor-pointer"
                 >
                   {username && (
                     <button
+                      type="button"
                       onClick={(event) => {
                         event.stopPropagation()
                         editUsername(team.abbr)
@@ -142,9 +159,7 @@ export default function FIFAEliminationBoard() {
                   </div>
 
                   <div className="mt-3 text-center pb-7">
-                    <div className="font-bold text-sm">
-                      {team.abbr}
-                    </div>
+                    <div className="font-bold text-sm">{team.abbr}</div>
                     <div className="text-[11px] text-zinc-400 leading-tight mt-1">
                       {team.name}
                     </div>
@@ -159,20 +174,34 @@ export default function FIFAEliminationBoard() {
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
                       >
-                        <line x1="12" y1="12" x2="88" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
-                        <line x1="88" y1="12" x2="12" y2="88" stroke="#ef4444" strokeWidth="8" strokeLinecap="round" />
+                        <line
+                          x1="12"
+                          y1="12"
+                          x2="88"
+                          y2="88"
+                          stroke="#ef4444"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                        />
+                        <line
+                          x1="88"
+                          y1="12"
+                          x2="12"
+                          y2="88"
+                          stroke="#ef4444"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                        />
                       </svg>
                     </>
                   )}
 
                   {username && (
                     <div className="absolute bottom-2 left-2 right-2 z-50 rounded-xl bg-black/90 px-2 py-1.5 text-center text-xs font-black text-white shadow-2xl ring-1 ring-white/30 backdrop-blur">
-                      <span className="block truncate">
-                        {username}
-                      </span>
+                      <span className="block truncate">{username}</span>
                     </div>
                   )}
-                </button>
+                </div>
               )
             })}
           </div>

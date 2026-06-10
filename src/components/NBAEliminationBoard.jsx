@@ -37,7 +37,6 @@ export default function NBAEliminationBoard() {
       abbr: 'TOR',
       logo: 'https://cdn.nba.com/logos/nba/1610612761/global/L/logo.svg',
     },
-
     {
       conference: 'Eastern',
       division: 'Central',
@@ -73,7 +72,6 @@ export default function NBAEliminationBoard() {
       abbr: 'MIL',
       logo: 'https://cdn.nba.com/logos/nba/1610612749/global/L/logo.svg',
     },
-
     {
       conference: 'Eastern',
       division: 'Southeast',
@@ -109,7 +107,6 @@ export default function NBAEliminationBoard() {
       abbr: 'WAS',
       logo: 'https://cdn.nba.com/logos/nba/1610612764/global/L/logo.svg',
     },
-
     {
       conference: 'Western',
       division: 'Northwest',
@@ -145,7 +142,6 @@ export default function NBAEliminationBoard() {
       abbr: 'UTA',
       logo: 'https://cdn.nba.com/logos/nba/1610612762/global/L/logo.svg',
     },
-
     {
       conference: 'Western',
       division: 'Pacific',
@@ -181,7 +177,6 @@ export default function NBAEliminationBoard() {
       abbr: 'SAC',
       logo: 'https://cdn.nba.com/logos/nba/1610612758/global/L/logo.svg',
     },
-
     {
       conference: 'Western',
       division: 'Southwest',
@@ -228,9 +223,16 @@ export default function NBAEliminationBoard() {
 
     if (newName === null) return
 
+    const cleanName = newName.trim()
+
     setUsernames((prev) => ({
       ...prev,
-      [abbr]: newName.trim(),
+      [abbr]: cleanName,
+    }))
+
+    setEliminated((prev) => ({
+      ...prev,
+      [abbr]: cleanName.length > 0,
     }))
   }
 
@@ -264,11 +266,13 @@ export default function NBAEliminationBoard() {
               NBA Elimination Board
             </h1>
             <p className="text-zinc-400 mt-2">
-              First click assigns a username. After assigned, click the logo to eliminate or restore them.
+              First click assigns a username and automatically marks the team.
+              Click again to restore or eliminate.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={resetBoard}
             className="px-5 py-3 rounded-2xl bg-white text-black font-semibold hover:scale-105 transition-transform"
           >
@@ -307,17 +311,25 @@ export default function NBAEliminationBoard() {
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                           {divisionTeams.map((team) => {
+                            const username = usernames[team.abbr] || ''
                             const isEliminated = Boolean(eliminated[team.abbr])
-                            const username = usernames[team.abbr]
 
                             return (
-                              <button
+                              <div
                                 key={team.abbr}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => handleTeamClick(team.abbr)}
-                                className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-44"
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    handleTeamClick(team.abbr)
+                                  }
+                                }}
+                                className="relative group bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 overflow-hidden min-h-44 cursor-pointer"
                               >
                                 {username && (
                                   <button
+                                    type="button"
                                     onClick={(event) => {
                                       event.stopPropagation()
                                       editUsername(team.abbr)
@@ -390,7 +402,7 @@ export default function NBAEliminationBoard() {
                                     </span>
                                   </div>
                                 )}
-                              </button>
+                              </div>
                             )
                           })}
                         </div>

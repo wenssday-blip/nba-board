@@ -30,17 +30,20 @@ export default function PokemonTypeBoard() {
 
   const editUsername = (typeName) => {
     const currentName = usernames[typeName] || ''
-
-    const newName = window.prompt(
-      `Assign username to ${typeName}:`,
-      currentName
-    )
+    const newName = window.prompt(`Assign username to ${typeName}:`, currentName)
 
     if (newName === null) return
 
+    const cleanName = newName.trim()
+
     setUsernames((prev) => ({
       ...prev,
-      [typeName]: newName.trim(),
+      [typeName]: cleanName,
+    }))
+
+    setEliminated((prev) => ({
+      ...prev,
+      [typeName]: cleanName.length > 0,
     }))
   }
 
@@ -77,7 +80,8 @@ export default function PokemonTypeBoard() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-zinc-400">
-              First click assigns a username. After assigned, clicking toggles the X.
+              First click assigns a username and automatically marks the type.
+              Click again to restore or eliminate.
             </p>
           </div>
 
@@ -103,6 +107,7 @@ export default function PokemonTypeBoard() {
             </div>
 
             <button
+              type="button"
               onClick={resetBoard}
               className="rounded-2xl bg-white px-5 py-3 font-bold text-zinc-950 transition hover:scale-105 hover:bg-yellow-200"
             >
@@ -113,14 +118,21 @@ export default function PokemonTypeBoard() {
 
         <main className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {TYPES.map((type) => {
+            const username = usernames[type.name] || ''
             const isEliminated = Boolean(eliminated[type.name])
-            const username = usernames[type.name]
 
             return (
-              <button
+              <div
                 key={type.name}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleCardClick(type.name)}
-                className="group relative min-h-52 overflow-hidden rounded-3xl border border-white/10 p-5 text-left shadow-xl transition duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    handleCardClick(type.name)
+                  }
+                }}
+                className="group relative min-h-52 cursor-pointer overflow-hidden rounded-3xl border border-white/10 p-5 text-left shadow-xl transition duration-200 hover:-translate-y-1 hover:shadow-2xl"
               >
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${type.colors}`}
@@ -144,15 +156,14 @@ export default function PokemonTypeBoard() {
                   </h2>
 
                   <p className="mt-2 text-sm font-semibold opacity-80">
-                    {username
-                      ? 'Click to toggle X'
-                      : 'Click to assign'}
+                    {username ? 'Click to toggle X' : 'Click to assign'}
                   </p>
                 </div>
 
                 {username && (
                   <>
                     <button
+                      type="button"
                       onClick={(event) => {
                         event.stopPropagation()
                         editUsername(type.name)
@@ -202,7 +213,7 @@ export default function PokemonTypeBoard() {
                     </svg>
                   </>
                 )}
-              </button>
+              </div>
             )
           })}
         </main>
