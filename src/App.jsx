@@ -3,6 +3,7 @@ import NBAEliminationBoard from './components/NBAEliminationBoard'
 import PokemonTypeBoard from './components/PokemonTypeBoard'
 import NFLEliminationBoard from './components/NFLEliminationBoard'
 import FIFAEliminationBoard from './components/FIFAEliminationBoard'
+import MLBEliminationBoard from './components/MLBEliminationBoard'
 
 export default function App() {
   const [board, setBoard] = useState('nba')
@@ -37,12 +38,20 @@ export default function App() {
         >
           FIFA Board
         </button>
+
+        <button
+          onClick={() => setBoard('mlb')}
+          className="rounded-xl bg-white px-4 py-2 font-bold text-black"
+        >
+          MLB Board
+        </button>
       </nav>
 
       {board === 'nba' && <NBAEliminationBoard />}
       {board === 'pokemon' && <PokemonTypeBoard />}
       {board === 'nfl' && <NFLEliminationBoard />}
       {board === 'fifa' && <FIFAEliminationBoard />}
+      {board === 'mlb' && <MLBEliminationBoard />}
     </div>
   )
 }
