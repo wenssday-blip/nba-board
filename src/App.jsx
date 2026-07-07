@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
 
 const NFL_TEAMS = [
   {
@@ -229,62 +230,133 @@ const NFL_TEAMS = [
 
 export default function App() {
   const [buyerName, setBuyerName] = useState("");
-  const [assignments, setAssignments] = useState(() => {
-    const saved = localStorage.getItem("sixfold-nfl-overlay");
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [assignments, setAssignments] = useState({});
   const [revealingTeam, setRevealingTeam] = useState(null);
+  const [isReady, setIsReady] = useState(false);
 
   const isObsMode = new URLSearchParams(window.location.search).get("obs") === "1";
 
   useEffect(() => {
-    localStorage.setItem("sixfold-nfl-overlay", JSON.stringify(assignments));
-  }, [assignments]);
+    let channel;
 
-  function handleTeamClick(team) {
-    if (buyerName.trim()) {
-      setAssignments((prev) => ({
-        ...prev,
-        [team.abbr]: {
-          buyer: buyerName.trim(),
-          claimed: true,
-        },
-      }));
-      return;
+    async function loadOverlayState() {
+      const { data, error } = await supabase
+        .from("overlay_state")
+        .select("assignments, revealing_team")
+        .eq("id", "main")
+        .single();
+
+      if (error) {
+        console.error("Error loading overlay state:", error);
+        setIsReady(true);
+        return;
+      }
+
+      setAssignments(data?.assignments || {});
+      setRevealingTeam(data?.revealing_team || null);
+      setIsReady(true);
     }
 
-    setAssignments((prev) => ({
-      ...prev,
-      [team.abbr]: {
-        ...prev[team.abbr],
-        claimed: !prev[team.abbr]?.claimed,
+    loadOverlayState();
+
+    channel = supabase
+      .channel("overlay-state-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "overlay_state",
+          filter: "id=eq.main",
+        },
+        (payload) => {
+          setAssignments(payload.new?.assignments || {});
+          setRevealingTeam(payload.new?.revealing_team || null);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
+
+  async function saveOverlayState(nextAssignments, nextRevealingTeam = revealingTeam) {
+    const { error } = await supabase.from("overlay_state").upsert(
+      {
+        id: "main",
+        assignments: nextAssignments,
+        revealing_team: nextRevealingTeam,
+        updated_at: new Date().toISOString(),
       },
-    }));
+      { onConflict: "id" }
+    );
+
+    if (error) {
+      console.error("Error saving overlay state:", error);
+    }
+  }
+
+  function handleTeamClick(team) {
+    const nextAssignments = { ...assignments };
+
+    if (buyerName.trim()) {
+      nextAssignments[team.abbr] = {
+        buyer: buyerName.trim(),
+        claimed: true,
+      };
+    } else {
+      nextAssignments[team.abbr] = {
+        ...nextAssignments[team.abbr],
+        claimed: !nextAssignments[team.abbr]?.claimed,
+      };
+    }
+
+    setAssignments(nextAssignments);
+    saveOverlayState(nextAssignments);
   }
 
   function clearTeam(team) {
-    setAssignments((prev) => {
-      const next = { ...prev };
-      delete next[team.abbr];
-      return next;
-    });
+    const nextAssignments = { ...assignments };
+    delete nextAssignments[team.abbr];
+
+    setAssignments(nextAssignments);
+    saveOverlayState(nextAssignments);
   }
 
   function clearBoard() {
     const confirmed = window.confirm("Clear the whole board?");
-    if (confirmed) {
-      setAssignments({});
-    }
+    if (!confirmed) return;
+
+    setAssignments({});
+    setRevealingTeam(null);
+    saveOverlayState({}, null);
   }
 
   function revealTeam(team) {
     setRevealingTeam(team);
+    saveOverlayState(assignments, team);
+  }
+
+  function closeReveal() {
+    setRevealingTeam(null);
+    saveOverlayState(assignments, null);
   }
 
   const leftTeams = NFL_TEAMS.slice(0, 12);
   const topTeams = NFL_TEAMS.slice(12, 16);
   const bottomTeams = NFL_TEAMS.slice(16, 20);
   const rightTeams = NFL_TEAMS.slice(20, 32);
+
+  if (!isReady) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black text-white">
+        Loading overlay...
+      </main>
+    );
+  }
 
   return (
     <main className="relative min-h-screen w-screen overflow-hidden bg-transparent text-white">
@@ -294,8 +366,14 @@ export default function App() {
 
       <DynamicBorder />
 
-      {revealingTeam && (
-        <RevealScreen team={revealingTeam} onClose={() => setRevealingTeam(null)} />
+      {isObsMode && revealingTeam && (
+        <RevealScreen team={revealingTeam} onClose={closeReveal} />
+      )}
+
+      {!isObsMode && revealingTeam && (
+        <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border border-blue-300/70 bg-black/90 px-4 py-2 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_18px_rgba(37,99,235,0.8)]">
+          Reveal sent to OBS: {revealingTeam.city} {revealingTeam.name}
+        </div>
       )}
 
       <section className="relative z-10 flex h-screen flex-col p-3">
@@ -486,7 +564,7 @@ function TeamCard({ team, assignment, isObsMode, onClick, onClear, onReveal }) {
       </div>
 
       {buyer && (
-        <div className="relative z-30 mt-1 max-w-full truncate rounded-md bg-black/85 px-2 py-0.5 text-[10px] font-black text-yellow-300 shadow-[0_0_8px_rgba(0,0,0,1)]">
+        <div className="relative z-30 mt-1 max-w-full truncate rounded-md bg-black/90 px-2.5 py-0.5 text-[13px] font-black uppercase leading-none text-yellow-300 shadow-[0_0_10px_rgba(0,0,0,1)]">
           {buyer}
         </div>
       )}
@@ -534,11 +612,21 @@ function RevealScreen({ team, onClose }) {
         onClick={onClose}
       >
         <video
+          key={`${team.abbr}-${team.revealVideo}`}
           src={team.revealVideo}
           autoPlay
           playsInline
+          preload="auto"
           className="h-full w-full object-cover"
+          onLoadedData={(event) => {
+            event.currentTarget.play().catch((error) => {
+              console.error("Reveal video autoplay failed:", error);
+            });
+          }}
           onEnded={onClose}
+          onError={(event) => {
+            console.error("Reveal video failed to load:", team.revealVideo, event);
+          }}
         />
       </div>
     );
