@@ -323,14 +323,14 @@ function TeamCard({ team, assignment, isObsMode, onClick, onClear, onReveal }) {
 
 function RevealScreen({ team, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black">
       <video
         key={`${team?.abbr}-${team?.revealVideo}`}
         src={team?.revealVideo}
         autoPlay
         playsInline
         preload="auto"
-        className="h-full w-full bg-black object-contain"
+        className="h-full w-full bg-black object-fill"
         onCanPlay={(event) => {
           event.currentTarget.play().catch((error) => {
             console.error("Reveal video autoplay failed:", error);
