@@ -171,8 +171,6 @@ export default function App() {
         </>
       )}
 
-      <DynamicBorder />
-
       {isObsMode && revealingTeam && (
         <RevealScreen team={revealingTeam} onClose={closeReveal} />
       )}
@@ -227,8 +225,6 @@ export default function App() {
           </div>
 
           <div className="relative min-h-0 overflow-hidden bg-transparent">
-            <div className="pointer-events-none absolute left-0 right-0 top-0 h-[5px] bg-gradient-to-r from-red-500 via-white to-blue-300 shadow-[0_0_18px_rgba(37,99,235,0.95)]" />
-
             {!isObsMode && (
               <div className="flex h-full items-center justify-center text-center">
                 <div>
@@ -245,25 +241,6 @@ export default function App() {
         </div>
       </section>
     </main>
-  );
-}
-
-function DynamicBorder() {
-  return (
-    <div className="pointer-events-none absolute inset-2 z-0 rounded-[2rem]">
-      <div className="absolute inset-0 rounded-[2rem] border-[5px] border-blue-300/85 shadow-[0_0_32px_rgba(37,99,235,0.95),inset_0_0_24px_rgba(37,99,235,0.22)]" />
-      <div className="absolute inset-[7px] rounded-[1.65rem] border border-white/25 shadow-[inset_0_0_18px_rgba(255,255,255,0.12)]" />
-
-      <div className="absolute left-24 top-0 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-white/80 to-transparent shadow-[0_0_14px_rgba(255,255,255,0.8)]" />
-      <div className="absolute right-24 top-0 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_14px_rgba(239,68,68,0.9)]" />
-      <div className="absolute bottom-0 left-24 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_14px_rgba(239,68,68,0.9)]" />
-      <div className="absolute bottom-0 right-24 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-white/80 to-transparent shadow-[0_0_14px_rgba(255,255,255,0.8)]" />
-
-      <div className="absolute left-0 top-28 h-1/4 w-[5px] bg-gradient-to-b from-transparent via-blue-300 to-transparent shadow-[0_0_14px_rgba(37,99,235,0.9)]" />
-      <div className="absolute left-0 bottom-28 h-1/4 w-[5px] bg-gradient-to-b from-transparent via-red-500 to-transparent shadow-[0_0_14px_rgba(239,68,68,0.9)]" />
-      <div className="absolute right-0 top-28 h-1/4 w-[5px] bg-gradient-to-b from-transparent via-red-500 to-transparent shadow-[0_0_14px_rgba(239,68,68,0.9)]" />
-      <div className="absolute right-0 bottom-28 h-1/4 w-[5px] bg-gradient-to-b from-transparent via-blue-300 to-transparent shadow-[0_0_14px_rgba(37,99,235,0.9)]" />
-    </div>
   );
 }
 
@@ -353,7 +330,7 @@ function RevealScreen({ team, onClose }) {
         autoPlay
         playsInline
         preload="auto"
-        className="h-full w-full bg-black object-cover"
+        className="h-full w-full bg-black object-contain"
         onCanPlay={(event) => {
           event.currentTarget.play().catch((error) => {
             console.error("Reveal video autoplay failed:", error);
