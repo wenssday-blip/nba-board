@@ -40,6 +40,7 @@ export default function App() {
   const [buyerName, setBuyerName] = useState("");
   const [assignments, setAssignments] = useState({});
   const [revealingTeam, setRevealingTeam] = useState(null);
+  const [showRespinText, setShowRespinText] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
   const isObsMode = new URLSearchParams(window.location.search).get("obs") === "1";
@@ -50,7 +51,7 @@ export default function App() {
     async function loadOverlayState() {
       const { data, error } = await supabase
         .from("overlay_state")
-        .select("assignments, revealing_team")
+        .select("assignments, revealing_team, show_respin_text")
         .eq("id", "main")
         .single();
 
@@ -62,6 +63,7 @@ export default function App() {
 
       setAssignments(data?.assignments || {});
       setRevealingTeam(data?.revealing_team || null);
+      setShowRespinText(data?.show_respin_text ?? true);
       setIsReady(true);
     }
 
@@ -80,6 +82,7 @@ export default function App() {
         (payload) => {
           setAssignments(payload.new?.assignments || {});
           setRevealingTeam(payload.new?.revealing_team || null);
+          setShowRespinText(payload.new?.show_respin_text ?? true);
         }
       )
       .subscribe();
@@ -91,12 +94,17 @@ export default function App() {
     };
   }, []);
 
-  async function saveOverlayState(nextAssignments, nextRevealingTeam = revealingTeam) {
+  async function saveOverlayState(
+    nextAssignments,
+    nextRevealingTeam = revealingTeam,
+    nextShowRespinText = showRespinText
+  ) {
     const { error } = await supabase.from("overlay_state").upsert(
       {
         id: "main",
         assignments: nextAssignments,
         revealing_team: nextRevealingTeam,
+        show_respin_text: nextShowRespinText,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }
@@ -140,7 +148,7 @@ export default function App() {
 
     setAssignments({});
     setRevealingTeam(null);
-    saveOverlayState({}, null);
+    saveOverlayState({}, null, showRespinText);
   }
 
   function revealTeam(team) {
@@ -151,6 +159,12 @@ export default function App() {
   function closeReveal() {
     setRevealingTeam(null);
     saveOverlayState(assignments, null);
+  }
+
+  function toggleRespinText() {
+    const nextShowRespinText = !showRespinText;
+    setShowRespinText(nextShowRespinText);
+    saveOverlayState(assignments, revealingTeam, nextShowRespinText);
   }
 
   if (!isReady) {
@@ -200,6 +214,18 @@ export default function App() {
               </button>
 
               <button
+                onClick={toggleRespinText}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-black uppercase",
+                  showRespinText
+                    ? "bg-yellow-600 text-black hover:bg-yellow-500"
+                    : "bg-zinc-700 text-white hover:bg-zinc-600",
+                ].join(" ")}
+              >
+                {showRespinText ? "Hide Re-Spin" : "Show Re-Spin"}
+              </button>
+
+              <button
                 onClick={clearBoard}
                 className="rounded-xl bg-red-700 px-4 py-2 text-sm font-black uppercase hover:bg-red-600"
               >
@@ -209,8 +235,8 @@ export default function App() {
           </header>
         )}
 
-        <div className="grid min-h-0 flex-1 grid-rows-[1fr_4fr] gap-0 overflow-hidden">
-          <div className="grid min-h-0 grid-cols-8 grid-rows-4 gap-2 pb-2">
+        <div className="grid min-h-0 flex-1 grid-rows-[1fr_auto_4fr] gap-0 overflow-hidden">
+          <div className="grid min-h-0 grid-cols-8 grid-rows-4 gap-2 pb-1">
             {NFL_TEAMS.map((team) => (
               <TeamCard
                 key={team.abbr}
@@ -223,6 +249,8 @@ export default function App() {
               />
             ))}
           </div>
+
+          {showRespinText && <RespinText />}
 
           <div className="relative min-h-0 overflow-hidden bg-transparent">
             {!isObsMode && (
@@ -241,6 +269,18 @@ export default function App() {
         </div>
       </section>
     </main>
+  );
+}
+
+function RespinText() {
+  return (
+    <div className="pointer-events-none flex justify-center pb-2">
+      <img
+        src="/respin-text.png"
+        alt="2 Teams For 1 Re-Spin"
+        className="h-[58px] w-auto object-contain drop-shadow-[0_0_8px_rgba(0,0,0,1)]"
+      />
+    </div>
   );
 }
 
