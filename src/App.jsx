@@ -41,6 +41,7 @@ export default function App() {
   const [assignments, setAssignments] = useState({});
   const [revealingTeam, setRevealingTeam] = useState(null);
   const [showRespinText, setShowRespinText] = useState(true);
+  const [showStashPass, setShowStashPass] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   const isObsMode = new URLSearchParams(window.location.search).get("obs") === "1";
@@ -51,7 +52,7 @@ export default function App() {
     async function loadOverlayState() {
       const { data, error } = await supabase
         .from("overlay_state")
-        .select("assignments, revealing_team, show_respin_text")
+        .select("assignments, revealing_team, show_respin_text, show_stash_pass")
         .eq("id", "main")
         .single();
 
@@ -64,6 +65,7 @@ export default function App() {
       setAssignments(data?.assignments || {});
       setRevealingTeam(data?.revealing_team || null);
       setShowRespinText(data?.show_respin_text ?? true);
+      setShowStashPass(data?.show_stash_pass ?? false);
       setIsReady(true);
     }
 
@@ -83,6 +85,7 @@ export default function App() {
           setAssignments(payload.new?.assignments || {});
           setRevealingTeam(payload.new?.revealing_team || null);
           setShowRespinText(payload.new?.show_respin_text ?? true);
+          setShowStashPass(payload.new?.show_stash_pass ?? false);
         }
       )
       .subscribe();
@@ -97,7 +100,8 @@ export default function App() {
   async function saveOverlayState(
     nextAssignments,
     nextRevealingTeam = revealingTeam,
-    nextShowRespinText = showRespinText
+    nextShowRespinText = showRespinText,
+    nextShowStashPass = showStashPass
   ) {
     const { error } = await supabase.from("overlay_state").upsert(
       {
@@ -105,6 +109,7 @@ export default function App() {
         assignments: nextAssignments,
         revealing_team: nextRevealingTeam,
         show_respin_text: nextShowRespinText,
+        show_stash_pass: nextShowStashPass,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }
@@ -148,7 +153,7 @@ export default function App() {
 
     setAssignments({});
     setRevealingTeam(null);
-    saveOverlayState({}, null, showRespinText);
+    saveOverlayState({}, null, showRespinText, showStashPass);
   }
 
   function revealTeam(team) {
@@ -164,7 +169,13 @@ export default function App() {
   function toggleRespinText() {
     const nextShowRespinText = !showRespinText;
     setShowRespinText(nextShowRespinText);
-    saveOverlayState(assignments, revealingTeam, nextShowRespinText);
+    saveOverlayState(assignments, revealingTeam, nextShowRespinText, showStashPass);
+  }
+
+  function toggleStashPass() {
+    const nextShowStashPass = !showStashPass;
+    setShowStashPass(nextShowStashPass);
+    saveOverlayState(assignments, revealingTeam, showRespinText, nextShowStashPass);
   }
 
   if (!isReady) {
@@ -189,6 +200,8 @@ export default function App() {
         <RevealScreen team={revealingTeam} onClose={closeReveal} />
       )}
 
+      {isObsMode && showStashPass && !revealingTeam && <StashPassOverlay />}
+
       {!isObsMode && revealingTeam && (
         <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border border-blue-300/70 bg-black/90 px-4 py-2 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_18px_rgba(37,99,235,0.8)]">
           Reveal sent to OBS: {revealingTeam.city} {revealingTeam.name}
@@ -198,7 +211,7 @@ export default function App() {
       <section className="relative z-10 flex h-screen flex-col p-3">
         {!isObsMode && (
           <header className="mb-2 flex justify-end">
-            <div className="flex items-center gap-2 rounded-2xl border border-blue-400/60 bg-black/80 p-2 shadow-[0_0_20px_rgba(37,99,235,0.45)]">
+            <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-blue-400/60 bg-black/80 p-2 shadow-[0_0_20px_rgba(37,99,235,0.45)]">
               <input
                 value={buyerName}
                 onChange={(e) => setBuyerName(e.target.value)}
@@ -223,6 +236,18 @@ export default function App() {
                 ].join(" ")}
               >
                 {showRespinText ? "Hide Re-Spin" : "Show Re-Spin"}
+              </button>
+
+              <button
+                onClick={toggleStashPass}
+                className={[
+                  "rounded-xl px-4 py-2 text-sm font-black uppercase",
+                  showStashPass
+                    ? "bg-cyan-400 text-black hover:bg-cyan-300"
+                    : "bg-zinc-700 text-white hover:bg-zinc-600",
+                ].join(" ")}
+              >
+                {showStashPass ? "Hide Stash/Pass" : "Show Stash/Pass"}
               </button>
 
               <button
@@ -278,7 +303,30 @@ function RespinText() {
       <img
         src="/respin-text.png"
         alt="2 Teams For 1 Re-Spin"
-        className="h-[58px] w-auto object-contain drop-shadow-[0_0_8px_rgba(0,0,0,1)]"
+        className="h-[78px] w-auto object-contain drop-shadow-[0_0_8px_rgba(0,0,0,1)]"
+      />
+    </div>
+  );
+}
+
+function StashPassOverlay() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center">
+      <video
+        src="/stash-or-pass.webm"
+        autoPlay
+        loop
+        playsInline
+        preload="auto"
+        className="w-[82vw] max-w-[900px] object-contain"
+        onCanPlay={(event) => {
+          event.currentTarget.play().catch((error) => {
+            console.error("Stash/Pass video autoplay failed:", error);
+          });
+        }}
+        onError={(event) => {
+          console.error("Stash/Pass video failed to load:", event);
+        }}
       />
     </div>
   );
