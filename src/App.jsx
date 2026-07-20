@@ -418,7 +418,7 @@ function RevealScreen({ team, onClose }) {
         autoPlay
         playsInline
         preload="auto"
-        className="h-full w-full bg-black object-fill"
+        className="h-full w-full bg-black object-contain"
         onCanPlay={(event) => {
           event.currentTarget.play().catch((error) => {
             console.error("Reveal video autoplay failed:", error);
